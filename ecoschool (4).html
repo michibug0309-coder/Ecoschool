@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EcoSchool 🌱</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gd:#2d7a3a;--gm:#4caf50;--gl:#a8e6a3;--gp:#e8f5e9;
+    --sky:#b3e5fc;--skd:#0288d1;--org:#ff9800;
+    --td:#1b5e20;--tm:#388e3c;
+    --sh:0 8px 32px rgba(44,122,58,.15);
+    --r:24px;--rs:14px;--nh:70px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;font-family:'Nunito',sans-serif;background:var(--gp);overflow-x:hidden;}
+
+  .page{display:none;min-height:100vh;}
+  .page.active{display:block;}
+  #page-login.active{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#e8f5e9,#b3e5fc,#a8e6a3);}
+  #page-app.active{display:flex;flex-direction:column;min-height:100vh;}
+
+  .leaf-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .leaf-bg span{position:absolute;font-size:1.5rem;opacity:.1;animation:floatLeaf 8s infinite ease-in-out;}
+  @keyframes floatLeaf{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-20px) rotate(15deg)}}
+  @keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── LOGIN ── */
+  .login-wrap{
+    position:relative;z-index:1;width:100%;max-width:460px;
+    background:#fff;border-radius:32px;padding:40px 32px;
+    box-shadow:0 20px 60px rgba(44,122,58,.22);
+    text-align:center;animation:popIn .5s ease;margin:16px;
+  }
+  .login-logo{font-size:3.5rem;margin-bottom:4px;}
+  .login-title{font-family:'Baloo 2',cursive;font-size:2.1rem;font-weight:800;color:var(--gd);}
+  .login-sub{color:var(--tm);font-size:.93rem;font-weight:600;margin-bottom:22px;}
+  .cloud-notice{background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:12px;padding:10px 14px;margin-bottom:18px;display:flex;align-items:center;gap:9px;font-size:.82rem;font-weight:700;color:#1565c0;text-align:left;}
+  .tabs{display:flex;gap:6px;margin-bottom:22px;background:var(--gp);border-radius:14px;padding:4px;}
+  .tab-btn{flex:1;padding:10px;border:none;background:transparent;border-radius:10px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;color:var(--tm);transition:all .3s;}
+  .tab-btn.active{background:#fff;color:var(--gd);box-shadow:0 4px 12px rgba(0,0,0,.1);}
+
+  /* ── FIELDS ── */
+  .fg{margin-bottom:13px;text-align:left;}
+  .fg label{font-weight:700;color:var(--td);font-size:.87rem;display:block;margin-bottom:5px;}
+  .fg input,.fg select{width:100%;padding:13px 16px;border:2px solid #c8e6c9;border-radius:14px;font-family:'Nunito',sans-serif;font-size:1rem;outline:none;transition:border .3s;background:var(--gp);}
+  .fg input:focus,.fg select:focus{border-color:var(--gm);background:#fff;}
+  .err{color:#e53935;font-size:.82rem;margin-top:5px;font-weight:700;display:none;}
+  .hf{display:none;}
+
+  /* ── REG PHOTO ── */
+  .photo-prev-wrap{position:relative;width:86px;height:86px;margin:0 auto 8px;cursor:pointer;}
+  .photo-prev{width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid var(--gm);display:block;}
+  .photo-ov{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.34);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:700;opacity:0;transition:opacity .2s;}
+  .photo-prev-wrap:hover .photo-ov{opacity:1;}
+
+  /* ── BUTTONS ── */
+  .btn-p{width:100%;padding:14px;background:linear-gradient(135deg,var(--gm),var(--gd));color:#fff;border:none;border-radius:16px;font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:800;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 6px 20px rgba(76,175,80,.4);margin-top:6px;}
+  .btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(76,175,80,.5);}
+  .btn-p:active{transform:translateY(0);}
+  .btn-p:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .btn-cancel{flex:1;padding:12px;background:#f5f5f5;color:#666;border:none;border-radius:14px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;}
+
+  /* ── TOPBAR ── */
+  .topbar{background:linear-gradient(90deg,var(--gd),var(--gm));padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(44,122,58,.3);flex-shrink:0;}
+  .topbar-logo{font-family:'Baloo 2',cursive;font-size:1.45rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px;}
+  .topbar-user{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;cursor:pointer;background:rgba(255,255,255,.2);padding:6px 13px;border-radius:20px;transition:background .2s;}
+  .topbar-user:hover{background:rgba(255,255,255,.32);}
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;align-items:center;padding:8px 0 14px;box-shadow:0 -4px 20px rgba(0,0,0,.1);z-index:100;border-radius:24px 24px 0 0;}
+  .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:6px 14px;border-radius:14px;transition:all .2s;font-family:'Nunito',sans-serif;}
+  .nav-btn .ni{font-size:1.65rem;}
+  .nav-btn .nl{font-size:.66rem;font-weight:700;color:#bbb;}
+  .nav-btn.active .nl{color:var(--gd);}
+  .nav-btn.active{background:var(--gp);}
+  .nav-btn.active .ni{transform:scale(1.15);}
+
+  /* ── CONTENT ── */
+  .content-area{flex:1;padding:18px 16px calc(var(--nh) + 18px);max-width:720px;margin:0 auto;width:100%;}
+  .sp{display:none;}
+  .sp.active{display:block;animation:fadeIn .3s ease;}
+
+  /* ── SECTION HEADERS ── */
+  .sh{border-radius:var(--r);padding:20px;margin-bottom:16px;text-align:center;box-shadow:var(--sh);}
+  .sh h2{font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:800;color:#fff;}
+  .sh p{color:rgba(255,255,255,.9);font-size:.88rem;font-weight:600;}
+  .sh-green{background:linear-gradient(135deg,#43a047,#1b5e20);}
+  .sh-teal{background:linear-gradient(135deg,#a5d6a7,#2e7d32);}
+  .sh-orange{background:linear-gradient(135deg,#ff9800,#e65100);}
+  .sh-blue{background:linear-gradient(135deg,#42a5f5,#0288d1);}
+  .st{font-family:'Baloo 2',cursive;font-size:1.18rem;font-weight:700;color:var(--gd);margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+  /* ── HOME ── */
+  .welcome{background:linear-gradient(135deg,#43a047,#1b5e20);border-radius:var(--r);padding:20px;color:#fff;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;}
+  .welcome::before{content:'🌳';font-size:5rem;position:absolute;right:-8px;bottom:-8px;opacity:.15;}
+  .welcome h2{font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;margin-bottom:2px;}
+  .welcome p{opacity:.9;font-size:.9rem;font-weight:600;}
+  .pts-bar{background:#fff;border-radius:18px;padding:14px 17px;margin-bottom:16px;display:flex;align-items:center;gap:11px;box-shadow:var(--sh);}
+  .pts-ic{font-size:1.9rem;}
+  .pts-inf{flex:1;}
+  .pts-lbl{font-size:.77rem;color:#888;font-weight:700;}
+  .pts-val{font-size:1.3rem;font-weight:900;color:var(--gd);}
+  .pbar{height:10px;background:#e0e0e0;border-radius:10px;overflow:hidden;margin-top:4px;}
+  .pfill{height:100%;background:linear-gradient(90deg,var(--gm),var(--gd));border-radius:10px;transition:width 1s;}
+  .rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:20px;}
+  .rec-card{background:#fff;border-radius:var(--rs);padding:16px 12px;text-align:center;box-shadow:var(--sh);cursor:pointer;transition:transform .2s,box-shadow .2s;border:2px solid transparent;}
+  .rec-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(44,122,58,.2);border-color:var(--gl);}
+  .rec-card .ri{font-size:2.2rem;margin-bottom:6px;}
+  .rec-card .rq{font-size:.79rem;font-weight:700;color:var(--td);line-height:1.3;}
+  .pet-sec{background:linear-gradient(135deg,#e1f5fe,#b3e5fc);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:16px;box-shadow:var(--sh);}
+  .pet-wrap{font-size:4rem;animation:bounce 2s infinite;display:inline-block;}
+  .pet-wrap img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:4px solid var(--gm);animation:bounce 2s infinite;}
+  .pet-name{font-family:'Baloo 2',cursive;font-size:1.15rem;color:#0288d1;font-weight:800;}
+  .pet-bw{max-width:190px;margin:7px auto 0;}
+  .pet-bl{font-size:.77rem;color:#888;font-weight:700;margin-bottom:3px;}
+
+  /* ── GARDEN ── */
+  .plant-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;}
+  .pslot{background:#fff;border-radius:15px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--sh);cursor:pointer;transition:transform .2s;border:3px dashed #c8e6c9;font-size:.73rem;font-weight:700;color:#aaa;}
+  .pslot.planted{border:3px solid var(--gl);}
+  .pslot:hover{transform:scale(1.05);}
+  .pslot .pe{font-size:2.1rem;}
+  .pslot .pn{font-size:.67rem;color:var(--tm);font-weight:700;margin-top:3px;text-align:center;padding:0 3px;}
+  .loc-btn{display:flex;align-items:center;gap:8px;padding:12px 15px;background:#e3f2fd;border:2px solid #90caf9;border-radius:14px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:#1565c0;transition:all .2s;width:100%;margin-bottom:9px;}
+  .loc-btn:hover{background:#bbdefb;}
+  .loc-res{background:#f1f8e9;border:2px solid #aed581;border-radius:12px;padding:9px 13px;font-size:.83rem;font-weight:700;color:var(--gd);margin-bottom:12px;display:none;}
+  .pform{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sh);}
+  .pform h3{font-family:'Baloo 2',cursive;font-size:1.1rem;color:var(--gd);margin-bottom:13px;}
+
+  /* ── SHOP ── */
+  .coins-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.25);padding:6px 15px;border-radius:20px;color:#fff;font-weight:800;font-size:.97rem;margin-top:7px;}
+  .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .sitem{background:#fff;border-radius:var(--rs);padding:13px 10px;text-align:center;box-shadow:var(--sh);cursor:pointer;transition:transform .2s;}
+  .sitem:hover{transform:translateY(-3px);}
+  .sitem .si{font-size:2.5rem;margin-bottom:5px;}
+  .sitem .sn{font-weight:800;color:var(--td);font-size:.87rem;}
+  .sitem .sd{font-size:.73rem;color:#888;margin:3px 0;}
+  .iprice{display:inline-flex;align-items:center;gap:4px;background:var(--gp);color:var(--gd);padding:4px 11px;border-radius:20px;font-weight:900;font-size:.82rem;margin-top:4px;}
+  .btn-buy{width:100%;margin-top:7px;padding:8px;background:linear-gradient(135deg,var(--gm),var(--gd));color:#fff;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;transition:opacity .2s;}
+  .btn-buy:hover{opacity:.88;}
+
+  /* ── PROFILE ── */
+  .prof-header{background:linear-gradient(135deg,var(--gd),#1b5e20);border-radius:var(--r);padding:24px 18px;text-align:center;margin-bottom:16px;box-shadow:var(--sh);}
+  .prof-av-wrap{position:relative;width:88px;height:88px;margin:0 auto 9px;cursor:pointer;}
+  .prof-av-wrap img{width:88px;height:88px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,.7);}
+  .prof-av-wrap .em{font-size:4.2rem;line-height:1;}
+  .prof-edit-btn{position:absolute;bottom:0;right:0;background:var(--gm);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+  .prof-name{font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;color:#fff;}
+  .prof-email{color:rgba(255,255,255,.75);font-size:.82rem;font-weight:600;margin-top:3px;}
+  .prof-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);padding:6px 15px;border-radius:20px;color:#fff;font-weight:800;margin-top:9px;}
+  .prof-sec{background:#fff;border-radius:var(--rs);margin-bottom:11px;overflow:hidden;box-shadow:var(--sh);}
+  .prow{display:flex;align-items:center;padding:14px 17px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .2s;}
+  .prow:last-child{border-bottom:none;}
+  .prow:hover{background:var(--gp);}
+  .prow-ic{font-size:1.3rem;margin-right:12px;}
+  .prow-txt{flex:1;}
+  .prow-lbl{font-weight:700;color:var(--td);font-size:.92rem;}
+  .prow-val{font-size:.77rem;color:#888;font-weight:600;margin-top:2px;}
+  .prow-arr{color:#ccc;font-size:1.1rem;}
+  .danger .prow-lbl{color:#e53935;}
+
+  /* ── SEARCH ── */
+  .sbox{display:flex;gap:8px;margin-bottom:16px;}
+  .sinp{flex:1;padding:13px 17px;border:2px solid #e0e0e0;border-radius:14px;font-family:'Nunito',sans-serif;font-size:1rem;outline:none;transition:border .3s;}
+  .sinp:focus{border-color:#42a5f5;}
+  .sbtn{padding:13px 15px;background:#42a5f5;color:#fff;border:none;border-radius:14px;font-size:1.1rem;cursor:pointer;}
+  .glitem{background:#fff;border-radius:var(--rs);padding:13px 17px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer;transition:transform .2s;display:flex;align-items:flex-start;gap:13px;}
+  .glitem:hover{transform:translateX(4px);}
+  .glic{font-size:1.8rem;}
+  .glword{font-weight:800;color:var(--td);}
+  .gldef{font-size:.79rem;color:#888;font-weight:600;margin-top:2px;line-height:1.4;}
+
+  /* ── MODALS ── */
+  .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:200;align-items:center;justify-content:center;padding:18px;}
+  .mo.open{display:flex;}
+  .mbox{background:#fff;border-radius:var(--r);padding:24px 20px;max-width:400px;width:100%;animation:popIn .3s ease;max-height:82vh;overflow-y:auto;}
+  .mbox h3{font-family:'Baloo 2',cursive;font-size:1.3rem;color:var(--gd);margin-bottom:9px;}
+  .mbox p{font-size:.92rem;line-height:1.65;color:#444;font-weight:600;white-space:pre-wrap;}
+  .mbox .mic{font-size:2.8rem;text-align:center;margin-bottom:9px;}
+  .mcls{margin-top:16px;width:100%;background:var(--gm);color:#fff;border:none;padding:12px;border-radius:14px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;}
+  .emo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:300;align-items:center;justify-content:center;padding:18px;}
+  .emo.open{display:flex;}
+  .embox{background:#fff;border-radius:var(--r);padding:24px 20px;max-width:380px;width:100%;animation:popIn .3s ease;}
+  .embox h3{font-family:'Baloo 2',cursive;font-size:1.2rem;color:var(--gd);margin-bottom:13px;}
+  .embtns{display:flex;gap:9px;margin-top:13px;}
+
+  /* Avatar modal */
+  .av-src-tabs{display:flex;gap:6px;margin-bottom:13px;background:var(--gp);border-radius:12px;padding:4px;}
+  .av-tab{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;color:var(--tm);transition:all .3s;}
+  .av-tab.active{background:#fff;color:var(--gd);box-shadow:0 3px 10px rgba(0,0,0,.1);}
+  .av-picker{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
+  .av-opt{font-size:2rem;cursor:pointer;padding:6px;border-radius:12px;border:3px solid transparent;transition:all .2s;}
+  .av-opt:hover,.av-opt.selected{border-color:var(--gm);background:var(--gp);transform:scale(1.1);}
+  .up-zone{border:3px dashed var(--gl);border-radius:17px;padding:22px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
+  .up-zone:hover{border-color:var(--gm);background:var(--gp);}
+  .up-prev{width:96px;height:96px;border-radius:50%;object-fit:cover;margin:0 auto 9px;display:block;border:3px solid var(--gm);}
+
+  /* Spinner */
+  .spin-ov{display:none;position:fixed;inset:0;background:rgba(255,255,255,.82);z-index:400;align-items:center;justify-content:center;flex-direction:column;gap:13px;}
+  .spin-ov.open{display:flex;}
+  .spinner{width:48px;height:48px;border:5px solid var(--gl);border-top-color:var(--gd);border-radius:50%;animation:spin .8s linear infinite;}
+  .spin-txt{font-weight:700;color:var(--gd);font-size:.97rem;}
+
+  .toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:var(--gd);color:#fff;padding:11px 22px;border-radius:20px;font-weight:800;font-size:.92rem;z-index:500;opacity:0;transition:opacity .3s;white-space:nowrap;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;}
+
+  /* RESPONSIVE */
+  @media(min-width:600px){
+    .rec-grid{grid-template-columns:repeat(4,1fr);}
+    .shop-grid{grid-template-columns:repeat(3,1fr);}
+    .plant-grid{grid-template-columns:repeat(4,1fr);}
+    .content-area{padding:22px 24px calc(var(--nh) + 20px);}
+  }
+  @media(min-width:1024px){
+    .content-area{max-width:860px;}
+    .plant-grid{grid-template-columns:repeat(5,1fr);}
+    .bottom-nav{max-width:680px;left:50%;right:auto;transform:translateX(-50%);}
+    .login-wrap{padding:48px 42px;}
+  }
+  @media(max-width:360px){
+    .login-wrap{padding:26px 14px;}
+    .login-title{font-size:1.9rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="leaf-bg">
+  <span style="left:5%;top:10%">🍃</span><span style="left:85%;top:20%;animation-delay:1s">🌿</span>
+  <span style="left:20%;top:70%;animation-delay:2s">🍀</span><span style="left:70%;top:80%;animation-delay:3s">🌱</span>
+  <span style="left:50%;top:40%;animation-delay:1.5s">🍃</span><span style="left:90%;top:60%;animation-delay:2.5s">🌿</span>
+</div>
+
+<!-- ════ LOGIN ════ -->
+<div id="page-login" class="page active">
+  <div class="login-wrap">
+    <div class="login-logo">🌱</div>
+    <div class="login-title">EcoSchool</div>
+    <div class="login-sub">¡Cuida el planeta con nosotros! 🌍</div>
+    <div class="cloud-notice">
+      <span style="font-size:1.3rem">☁️</span>
+      Tu cuenta se guarda en este dispositivo. Usa el <strong>código de cuenta</strong> para entrar desde otro dispositivo.
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+      <button class="tab-btn" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="fg"><label>📧 Correo electrónico</label><input type="email" id="li-email" placeholder="tu@correo.com"></div>
+      <div class="fg"><label>🔑 Contraseña</label><input type="password" id="li-pass" placeholder="Tu contraseña secreta"></div>
+      <div class="err" id="li-err">❌ Correo o contraseña incorrectos</div>
+      <button class="btn-p" id="btn-li" onclick="doLogin()">🌿 ¡Entrar!</button>
+      <div style="margin-top:14px;text-align:center">
+        <button style="background:none;border:none;color:var(--skd);font-weight:700;font-size:.85rem;cursor:pointer" onclick="openImport()">📲 Tengo un código de otro dispositivo</button>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="form-register" class="hf">
+      <div style="text-align:center;margin-bottom:10px">
+        <p style="font-size:.82rem;color:#888;font-weight:700;margin-bottom:7px">Foto de perfil (opcional)</p>
+        <div class="photo-prev-wrap" onclick="document.getElementById('reg-fi').click()">
+          <img class="photo-prev" id="reg-prev" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 90'%3E%3Ccircle cx='45' cy='45' r='45' fill='%23e8f5e9'/%3E%3Ctext x='45' y='58' text-anchor='middle' font-size='40'%3E🌳%3C/text%3E%3C/svg%3E" alt="foto">
+          <div class="photo-ov">📷 Cambiar</div>
+        </div>
+        <input type="file" id="reg-fi" accept="image/*" style="display:none" onchange="handleRegPhoto(event)">
+        <small style="color:#bbb;font-size:.73rem">Toca la foto para elegir desde tu galería</small>
+      </div>
+      <div class="fg"><label>👤 Nombre</label><input type="text" id="reg-name" placeholder="Tu nombre"></div>
+      <div class="fg"><label>👤 Apellido</label><input type="text" id="reg-last" placeholder="Tu apellido"></div>
+      <div class="fg"><label>📧 Correo electrónico</label><input type="email" id="reg-email" placeholder="tu@correo.com"></div>
+      <div class="fg"><label>🎂 Fecha de cumpleaños</label><input type="date" id="reg-bday"></div>
+      <div class="fg"><label>🔑 Contraseña</label><input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"></div>
+      <div class="err" id="reg-err">❌ Por favor llena todos los campos</div>
+      <button class="btn-p" id="btn-reg" onclick="doRegister()">🌱 ¡Crear mi cuenta!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="page-app" class="page">
+  <div class="topbar">
+    <div class="topbar-logo">🌱 EcoSchool</div>
+    <div class="topbar-user" onclick="goSection('profile')">
+      <span id="tb-av"></span>
+      <span id="tb-name">Amigo</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <!-- HOME -->
+    <div id="sec-home" class="sp active">
+      <div class="welcome"><h2>¡Hola, <span id="h-name">Amigo</span>! 👋</h2><p>¡Juntos podemos salvar el planeta! 🌍</p></div>
+      <div class="pet-sec">
+        <div class="pet-wrap" id="h-pet"></div>
+        <div class="pet-name">Tu árbol mágico</div>
+        <div class="pet-bw"><div class="pet-bl">Vida 360/500</div><div class="pbar"><div class="pfill" style="width:72%"></div></div></div>
+      </div>
+      <div class="pts-bar">
+        <span class="pts-ic">🍃</span>
+        <div class="pts-inf"><div class="pts-lbl">Puntos de vida</div><div class="pts-val" id="h-pts">15</div><div class="pbar"><div class="pfill" id="pb-pts" style="width:15%"></div></div></div>
+        <div style="font-size:.77rem;color:#888;font-weight:700">Huella verde: 1 🌿</div>
+      </div>
+      <div class="st">🌿 Recomendaciones</div>
+      <div class="rec-grid">
+        <div class="rec-card" onclick="openM('reg')"><div class="ri">🌻</div><div class="rq">¿Cómo me registro?</div></div>
+        <div class="rec-card" onclick="openM('help')"><div class="ri">🌍</div><div class="rq">¿Cómo ayudo al ambiente?</div></div>
+        <div class="rec-card" onclick="openM('defo')"><div class="ri">🌲</div><div class="rq">¿Qué es la deforestación?</div></div>
+        <div class="rec-card" onclick="openM('care')"><div class="ri">💧</div><div class="rq">¿Cómo cuido mi planta?</div></div>
+      </div>
+    </div>
+
+    <!-- JARDÍN -->
+    <div id="sec-garden" class="sp">
+      <div class="sh sh-teal"><h2>🌸 Mi Jardín</h2><p>¡Aquí crecen tus plantas! ¡Cuídalas mucho!</p></div>
+      <div class="st">🌱 Mis Plantas</div>
+      <div class="plant-grid" id="plant-grid"></div>
+      <div class="pform">
+        <h3>➕ Registrar nueva planta</h3>
+        <div class="fg"><label>🌿 Nombre</label><input type="text" id="pl-name" placeholder="Ej: Mi rosal rojo"></div>
+        <div class="fg"><label>🌱 Tipo</label>
+          <select id="pl-type">
+            <option value="">Selecciona...</option>
+            <option value="🌹">🌹 Rosa</option><option value="🌻">🌻 Girasol</option>
+            <option value="🌵">🌵 Cactus</option><option value="🌳">🌳 Árbol</option>
+            <option value="🍅">🍅 Tomate</option><option value="🌿">🌿 Hierba</option>
+            <option value="🍀">🍀 Trébol</option><option value="🌺">🌺 Flor</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>📍 Ubicación</label>
+          <button class="loc-btn" id="loc-btn" onclick="reqLoc()"><span>📍</span> Usar mi ubicación actual</button>
+          <div class="loc-res" id="loc-res">📍 <span id="loc-txt"></span></div>
+          <input type="text" id="pl-loc" placeholder="O escribe tu dirección aquí">
+        </div>
+        <button class="btn-p" onclick="addPlant()">🌱 ¡Registrar planta!</button>
+      </div>
+    </div>
+
+    <!-- TIENDA -->
+    <div id="sec-shop" class="sp">
+      <div class="sh sh-orange"><h2>🛒 Tienda EcoSchool</h2><p>¡Compra cosas para tu mascota y plantas!</p><div class="coins-badge">🍃 <span id="sh-coins">15</span> puntos</div></div>
+      <div class="st">🌟 Artículos</div>
+      <div class="shop-grid">
+        <div class="sitem"><div class="si">💧</div><div class="sn">Regadera mágica</div><div class="sd">¡Tus plantas crecen más!</div><div class="iprice">🍃 10 pts</div><button class="btn-buy" onclick="buy('Regadera mágica',10)">¡Comprar!</button></div>
+        <div class="sitem"><div class="si">🌈</div><div class="sn">Arco iris</div><div class="sd">Decora tu jardín</div><div class="iprice">🍃 20 pts</div><button class="btn-buy" onclick="buy('Arco iris',20)">¡Comprar!</button></div>
+        <div class="sitem"><div class="si">🧪</div><div class="sn">Abono especial</div><div class="sd">Nutrición extra</div><div class="iprice">🍃 15 pts</div><button class="btn-buy" onclick="buy('Abono especial',15)">¡Comprar!</button></div>
+        <div class="sitem"><div class="si">🏡</div><div class="sn">Casa de pájaros</div><div class="sd">¡Atrae pajaritos!</div><div class="iprice">🍃 25 pts</div><button class="btn-buy" onclick="buy('Casa de pájaros',25)">¡Comprar!</button></div>
+        <div class="sitem"><div class="si">🦋</div><div class="sn">Jardín mariposas</div><div class="sd">¡Mariposas en tu jardín!</div><div class="iprice">🍃 30 pts</div><button class="btn-buy" onclick="buy('Jardín mariposas',30)">¡Comprar!</button></div>
+        <div class="sitem"><div class="si">⭐</div><div class="sn">Estrella EcoHéroe</div><div class="sd">¡Sé un héroe verde!</div><div class="iprice">🍃 50 pts</div><button class="btn-buy" onclick="buy('Estrella EcoHéroe',50)">¡Comprar!</button></div>
+      </div>
+    </div>
+
+    <!-- BUSCAR -->
+    <div id="sec-search" class="sp">
+      <div class="sh sh-blue"><h2>🔍 Busca y aprende</h2></div>
+      <div class="sbox"><input class="sinp" id="sinp" placeholder="Busca una palabra..." oninput="filterG()"><button class="sbtn">🔍</button></div>
+      <div class="st">📚 Glosario Verde</div>
+      <div id="gl-list"></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div id="sec-profile" class="sp">
+      <div class="prof-header">
+        <div class="prof-av-wrap" id="prof-av-wrap">
+          <button class="prof-edit-btn" onclick="openAvEdit()">✏️</button>
+        </div>
+        <div class="prof-name" id="prof-name">—</div>
+        <div class="prof-email" id="prof-email">—</div>
+        <div class="prof-badge">🍃 <span id="prof-pts">15</span> puntos</div>
+      </div>
+      <!-- Export code -->
+      <div style="background:#fff;border-radius:var(--rs);padding:14px 17px;margin-bottom:11px;box-shadow:var(--sh)">
+        <div style="font-weight:700;color:var(--gd);font-size:.9rem;margin-bottom:6px">☁️ Tu código de cuenta</div>
+        <div style="font-size:.78rem;color:#888;font-weight:600;margin-bottom:9px">Guarda este código para entrar desde otro dispositivo</div>
+        <div id="export-code" style="background:var(--gp);border-radius:10px;padding:9px 12px;font-size:.75rem;font-weight:700;color:var(--gd);word-break:break-all;margin-bottom:9px">—</div>
+        <button onclick="copyCode()" style="background:var(--gm);color:#fff;border:none;padding:8px 18px;border-radius:12px;font-family:'Nunito',sans-serif;font-size:.87rem;font-weight:800;cursor:pointer">📋 Copiar código</button>
+      </div>
+      <div class="prof-sec">
+        <div class="prow" onclick="openEdit('name','Nombre','text')"><span class="prow-ic">👤</span><div class="prow-txt"><div class="prow-lbl">Nombre</div><div class="prow-val" id="pr-name">—</div></div><span class="prow-arr">›</span></div>
+        <div class="prow" onclick="openEdit('last','Apellido','text')"><span class="prow-ic">👤</span><div class="prow-txt"><div class="prow-lbl">Apellido</div><div class="prow-val" id="pr-last">—</div></div><span class="prow-arr">›</span></div>
+        <div class="prow" onclick="openEdit('desc','Descripción','text')"><span class="prow-ic">📝</span><div class="prow-txt"><div class="prow-lbl">Descripción</div><div class="prow-val" id="pr-desc">—</div></div><span class="prow-arr">›</span></div>
+        <div class="prow" onclick="openEdit('bday','Cumpleaños','date')"><span class="prow-ic">🎂</span><div class="prow-txt"><div class="prow-lbl">Cumpleaños</div><div class="prow-val" id="pr-bday">—</div></div><span class="prow-arr">›</span></div>
+        <div class="prow" onclick="openEdit('pass','Contraseña','password')"><span class="prow-ic">🔑</span><div class="prow-txt"><div class="prow-lbl">Contraseña</div><div class="prow-val">••••••</div></div><span class="prow-arr">›</span></div>
+      </div>
+      <div class="prof-sec">
+        <div class="prow" onclick="openEdit('favs','Favoritos','text')"><span class="prow-ic">⭐</span><div class="prow-txt"><div class="prow-lbl">Favoritos</div><div class="prow-val" id="pr-favs">—</div></div><span class="prow-arr">›</span></div>
+        <div class="prow" onclick="openEdit('addr','Dirección','text')"><span class="prow-ic">📍</span><div class="prow-txt"><div class="prow-lbl">Dirección</div><div class="prow-val" id="pr-addr">—</div></div><span class="prow-arr">›</span></div>
+      </div>
+      <div class="prof-sec">
+        <div class="prow danger" onclick="doLogout()"><span class="prow-ic">🚪</span><div class="prow-txt"><div class="prow-lbl">Cerrar sesión</div></div><span class="prow-arr">›</span></div>
+        <div class="prow danger" onclick="doDelete()"><span class="prow-ic">❌</span><div class="prow-txt"><div class="prow-lbl">Cancelar mi cuenta</div></div><span class="prow-arr">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="goSection('home')"><span class="ni">🏠</span><span class="nl">Inicio</span></button>
+    <button class="nav-btn" id="nav-garden" onclick="goSection('garden')"><span class="ni">🌻</span><span class="nl">Jardín</span></button>
+    <button class="nav-btn" id="nav-shop" onclick="goSection('shop')"><span class="ni">🛒</span><span class="nl">Tienda</span></button>
+    <button class="nav-btn" id="nav-search" onclick="goSection('search')"><span class="ni">🔍</span><span class="nl">Buscar</span></button>
+    <button class="nav-btn" id="nav-profile" onclick="goSection('profile')"><span class="ni">👤</span><span class="nl">Perfil</span></button>
+  </div>
+</div>
+
+<!-- ════ MODALS ════ -->
+<div class="mo" id="info-mo">
+  <div class="mbox">
+    <div class="mic" id="m-ic"></div>
+    <h3 id="m-title"></h3>
+    <p id="m-body"></p>
+    <button class="mcls" onclick="closeM()">✅ ¡Entendido!</button>
+  </div>
+</div>
+
+<div class="emo" id="edit-mo">
+  <div class="embox">
+    <h3 id="e-title">Editar</h3>
+    <div class="fg"><label id="e-lbl">Valor</label><input id="e-inp" type="text" placeholder="Escribe aquí..."></div>
+    <div class="embtns">
+      <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="btn-p" style="flex:1;margin-top:0" onclick="saveEdit()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="emo" id="av-mo">
+  <div class="embox">
+    <h3>😊 Cambiar foto de perfil</h3>
+    <div class="av-src-tabs">
+      <button class="av-tab active" onclick="swAvTab('emoji')">🐢 Emoji</button>
+      <button class="av-tab" onclick="swAvTab('photo')">📷 Mi galería</button>
+    </div>
+    <div id="av-emoji-tab">
+      <div class="av-picker" id="av-picker">
+        <span class="av-opt" onclick="selAvEmoji(this)" data-v="🌳">🌳</span><span class="av-opt" onclick="selAvEmoji(this)" data-v="🐢">🐢</span>
+        <span class="av-opt" onclick="selAvEmoji(this)" data-v="🦋">🦋</span><span class="av-opt" onclick="selAvEmoji(this)" data-v="🌸">🌸</span>
+        <span class="av-opt" onclick="selAvEmoji(this)" data-v="🐸">🐸</span><span class="av-opt" onclick="selAvEmoji(this)" data-v="🦜">🦜</span>
+        <span class="av-opt" onclick="selAvEmoji(this)" data-v="🌻">🌻</span><span class="av-opt" onclick="selAvEmoji(this)" data-v="🦊">🦊</span>
+        <span class="av-opt" onclick="selAvEmoji(this)" data-v="🐨">🐨</span><span class="av-opt" onclick="selAvEmoji(this)" data-v="🌺">🌺</span>
+      </div>
+    </div>
+    <div id="av-photo-tab" style="display:none">
+      <div class="up-zone" onclick="document.getElementById('av-fi').click()">
+        <img id="av-prev" class="up-prev" src="" style="display:none" alt="preview">
+        <div id="av-hint"><div style="font-size:2.4rem">📷</div><div style="font-weight:700;color:var(--gd);margin-top:5px">Toca para elegir una foto</div><div style="font-size:.78rem;color:#aaa;margin-top:3px">Galería, cámara o archivos</div></div>
+      </div>
+      <input type="file" id="av-fi" accept="image/*" style="display:none" onchange="handleAvPhoto(event)">
+    </div>
+    <div class="embtns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeAvEdit()">Cancelar</button>
+      <button class="btn-p" style="flex:1;margin-top:0" onclick="saveAvEdit()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import code modal -->
+<div class="emo" id="import-mo">
+  <div class="embox">
+    <h3>📲 Importar cuenta</h3>
+    <p style="font-size:.85rem;color:#888;font-weight:600;margin-bottom:12px">Pega el código de tu cuenta de otro dispositivo</p>
+    <div class="fg"><label>Código de cuenta</label><textarea id="import-code-inp" rows="4" style="width:100%;padding:12px;border:2px solid #c8e6c9;border-radius:14px;font-family:'Nunito',sans-serif;font-size:.85rem;resize:vertical" placeholder="Pega aquí tu código..."></textarea></div>
+    <div class="err" id="import-err">❌ Código inválido</div>
+    <div class="embtns">
+      <button class="btn-cancel" onclick="closeImport()">Cancelar</button>
+      <button class="btn-p" style="flex:1;margin-top:0" onclick="doImport()">📲 Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="spin-ov" id="spin-ov"><div class="spinner"></div><div class="spin-txt" id="spin-txt">Cargando...</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   DATA LAYER — localStorage con export/import
+   La sesión se persiste. Para pasar a otro dispositivo
+   el usuario copia su "código de cuenta" (JSON en base64)
+   ===================================================== */
+
+function dbG(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}}
+function dbS(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+let users = dbG('eco3_users')||[];
+let cu = dbG('eco3_session');  // current user
+let plants=[];
+let editField='';
+let avTab='emoji';
+let pendEmoji='',pendPhoto='';
+let locLat=null,locLng=null;
+
+const MDATA={
+  reg:{ic:'🌻',t:'¿Cómo me registro?',b:'¡Es muy fácil!\n1. Presiona "Registrarse"\n2. Elige una foto o emoji de perfil\n3. Escribe tu nombre, correo y contraseña\n4. ¡Listo! Ya eres parte de EcoSchool 🎉\n\n💡 Para entrar desde otro celular, ve a tu Perfil y copia tu código de cuenta.'},
+  help:{ic:'🌍',t:'¿Cómo ayudo al ambiente?',b:'¡Tú puedes hacer mucho!\n🌱 Planta árboles y flores\n💧 No desperdicies agua\n♻️ Recicla tu basura\n🚶 Camina o usa bicicleta\n💡 Apaga las luces que no usas\n🛍️ Usa bolsas de tela\n\n¡Cada pequeña acción cuenta para salvar nuestro planeta!'},
+  defo:{ic:'🌲',t:'¿Qué es la deforestación?',b:'La deforestación es cuando las personas cortan muchos árboles del bosque sin plantar nuevos.\n\n¿Por qué es malo?\n😢 Los animales pierden su hogar\n🌡️ La Tierra se calienta más\n💨 El aire se vuelve menos limpio\n🌧️ Llueve menos\n\n¡Por eso en EcoSchool plantamos árboles! 🌳'},
+  care:{ic:'💧',t:'¿Cómo cuido mi planta?',b:'¡Secretos para una planta feliz!\n\n☀️ Dale suficiente luz solar\n💧 Riegala (¡no demasiada!)\n🪴 Usa buen suelo con nutrientes\n🌡️ Protégela del frío extremo\n✂️ Quita las hojas secas\n❤️ ¡Háblale con amor!\n\n¡Las plantas crecen mejor cuando las cuidamos todos los días!'},
+};
+
+const GLOSSARY=[
+  {ic:'🌲',w:'Deforestación',d:'Cuando se cortan muchos árboles del bosque sin plantar otros nuevos.'},
+  {ic:'🌍',w:'Medio ambiente',d:'Todo lo que nos rodea: aire, agua, plantas, animales y suelo.'},
+  {ic:'♻️',w:'Reciclaje',d:'Convertir cosas usadas en materiales nuevos para no desperdiciar recursos.'},
+  {ic:'💧',w:'Agua potable',d:'El agua limpia que podemos beber. ¡Hay que cuidarla mucho!'},
+  {ic:'🌱',w:'Reforestación',d:'Plantar nuevos árboles donde antes había bosque. ¡Ayuda a la naturaleza!'},
+  {ic:'☀️',w:'Energía solar',d:'Energía que viene del sol. ¡Es limpia y no contamina el aire!'},
+  {ic:'🐝',w:'Polinización',d:'Cuando las abejas llevan polen de flor en flor para que nazcan frutos.'},
+  {ic:'🌿',w:'Biodiversidad',d:'La gran variedad de plantas y animales que viven en nuestro planeta.'},
+  {ic:'💨',w:'Contaminación',d:'Cuando basura o humo ensucian el aire, el agua o la tierra.'},
+  {ic:'🌡️',w:'Cambio climático',d:'El calentamiento de la Tierra por gases que atrapan el calor del sol.'},
+  {ic:'🏭',w:'Huella de carbono',d:'La cantidad de gases contaminantes que producimos con nuestras actividades.'},
+  {ic:'🌾',w:'Ecosistema',d:'Un lugar donde plantas, animales y el ambiente viven juntos en equilibrio.'},
+];
+
+// ── PHOTO HELPERS ──
+function f2b64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej();r.readAsDataURL(file);});}
+function resize(url,max=220){return new Promise(res=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const s=Math.min(max,img.width,img.height);c.width=s;c.height=s;const ctx=c.getContext('2d');const m=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);res(c.toDataURL('image/jpeg',.78));};img.src=url;});}
+
+async function handleRegPhoto(e){
+  const f=e.target.files[0];if(!f)return;
+  const b=await f2b64(f);const s=await resize(b);
+  document.getElementById('reg-prev').src=s;
+  window._rp=s;
+}
+
+// ── AUTH ──
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
+  document.getElementById('form-login').style.display=t==='login'?'block':'none';
+  document.getElementById('form-register').style.display=t==='register'?'block':'none';
+  ['li-err','reg-err'].forEach(id=>document.getElementById(id).style.display='none');
+}
+
+function doLogin(){
+  const email=document.getElementById('li-email').value.trim().toLowerCase();
+  const pass=document.getElementById('li-pass').value;
+  document.getElementById('li-err').style.display='none';
+  const user=users.find(u=>u.email===email&&u.pass===pass);
+  if(!user){document.getElementById('li-err').style.display='block';return;}
+  cu=user; dbS('eco3_session',cu); startApp();
+}
+
+async function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const last=document.getElementById('reg-last').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const bday=document.getElementById('reg-bday').value;
+  const pass=document.getElementById('reg-pass').value;
+  const err=document.getElementById('reg-err');
+  err.style.display='none';
+  if(!name||!last||!email||!pass||pass.length<6){err.textContent='❌ Por favor llena todos los campos (contraseña mínimo 6 letras)';err.style.display='block';return;}
+  if(users.find(u=>u.email===email)){err.textContent='❌ Este correo ya está registrado';err.style.display='block';return;}
+  const btn=document.getElementById('btn-reg');
+  btn.disabled=true;btn.textContent='🌱 Creando...';
+  const user={id:Date.now().toString(36)+Math.random().toString(36).slice(2),name,last,email,pass,bday,avatar:window._rp||'🌳',avType:window._rp?'photo':'emoji',desc:'',favs:'',addr:'',points:15};
+  users.push(user); dbS('eco3_users',users);
+  cu=user; dbS('eco3_session',cu);
+  btn.disabled=false; btn.textContent='🌱 ¡Crear mi cuenta!';
+  startApp();
+}
+
+function startApp(){
+  plants=dbG('eco3_plants_'+cu.id)||[];
+  document.getElementById('page-login').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+  updateUI(); renderPlants(); renderGlossary(GLOSSARY); goSection('home');
+}
+
+// ── AVATAR RENDER ──
+function renderAv(wrap,u,size){
+  wrap.innerHTML='';
+  if(u.avType==='photo'&&u.avatar&&u.avatar.startsWith('data:')){
+    const img=document.createElement('img');
+    img.src=u.avatar;
+    img.style.cssText=`width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.7)`;
+    wrap.appendChild(img);
+  } else {
+    const sp=document.createElement('span');
+    sp.textContent=u.avatar||'🌳';
+    sp.style.cssText=`font-size:${Math.round(size*.55)}px;line-height:1;display:inline-block`;
+    wrap.appendChild(sp);
+  }
+}
+
+function updateUI(){
+  const u=cu;
+  document.getElementById('tb-name').textContent=u.name;
+  renderAv(document.getElementById('tb-av'),u,30);
+  document.getElementById('h-name').textContent=u.name;
+  const hpet=document.getElementById('h-pet');hpet.innerHTML='';
+  if(u.avType==='photo'&&u.avatar.startsWith('data:')){
+    const img=document.createElement('img');img.src=u.avatar;img.style.cssText='width:80px;height:80px;border-radius:50%;object-fit:cover;border:4px solid var(--gm);animation:bounce 2s infinite;display:inline-block';
+    hpet.appendChild(img);
+  } else {hpet.textContent=u.avatar||'🌳';}
+  document.getElementById('h-pts').textContent=u.points;
+  document.getElementById('pb-pts').style.width=Math.min(u.points,100)+'%';
+  document.getElementById('sh-coins').textContent=u.points;
+
+  // Profile
+  const paw=document.getElementById('prof-av-wrap');
+  // keep edit button
+  const eb=paw.querySelector('.prof-edit-btn');
+  paw.innerHTML='';
+  paw.appendChild(eb);
+  if(u.avType==='photo'&&u.avatar.startsWith('data:')){
+    const img=document.createElement('img');img.src=u.avatar;img.style.cssText='width:88px;height:88px;border-radius:50%;object-fit:cover;border:4px solid rgba(255,255,255,.7)';
+    paw.insertBefore(img,eb);
+  } else {
+    const sp=document.createElement('span');sp.className='em';sp.textContent=u.avatar||'🌳';
+    paw.insertBefore(sp,eb);
+  }
+  document.getElementById('prof-name').textContent=u.name+' '+u.last;
+  document.getElementById('prof-email').textContent=u.email;
+  document.getElementById('prof-pts').textContent=u.points;
+  document.getElementById('pr-name').textContent=u.name||'—';
+  document.getElementById('pr-last').textContent=u.last||'—';
+  document.getElementById('pr-desc').textContent=u.desc||'—';
+  document.getElementById('pr-bday').textContent=u.bday||'—';
+  document.getElementById('pr-favs').textContent=u.favs||'—';
+  document.getElementById('pr-addr').textContent=u.addr||'—';
+  // Export code
+  const exportData={user:cu,plants:dbG('eco3_plants_'+cu.id)||[]};
+  document.getElementById('export-code').textContent=btoa(unescape(encodeURIComponent(JSON.stringify(exportData))));
+}
+
+function saveUser(){
+  const i=users.findIndex(u=>u.id===cu.id);
+  if(i>=0)users[i]=cu;else users.push(cu);
+  dbS('eco3_users',users);dbS('eco3_session',cu);
+}
+
+// ── NAV ──
+function goSection(s){
+  document.querySelectorAll('.sp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+s).classList.add('active');
+  const nb=document.getElementById('nav-'+s);if(nb)nb.classList.add('active');
+}
+
+// ── MODALS ──
+function openM(k){const m=MDATA[k];document.getElementById('m-ic').textContent=m.ic;document.getElementById('m-title').textContent=m.t;document.getElementById('m-body').textContent=m.b;document.getElementById('info-mo').classList.add('open');}
+function closeM(){document.getElementById('info-mo').classList.remove('open');}
+function openEdit(f,l,t){editField=f;document.getElementById('e-title').textContent='✏️ Editar '+l;document.getElementById('e-lbl').textContent=l;const inp=document.getElementById('e-inp');inp.type=t;inp.value=cu[f]||'';document.getElementById('edit-mo').classList.add('open');setTimeout(()=>inp.focus(),200);}
+function closeEdit(){document.getElementById('edit-mo').classList.remove('open');}
+function saveEdit(){cu[editField]=document.getElementById('e-inp').value.trim();saveUser();updateUI();closeEdit();toast('✅ ¡Guardado!');}
+
+// ── AVATAR EDIT ──
+function openAvEdit(){
+  pendEmoji=cu.avatar;pendPhoto='';
+  document.querySelectorAll('#av-picker .av-opt').forEach(a=>a.classList.toggle('selected',a.dataset.v===pendEmoji));
+  document.getElementById('av-prev').style.display='none';
+  document.getElementById('av-hint').style.display='block';
+  swAvTab('emoji');
+  document.getElementById('av-mo').classList.add('open');
+}
+function closeAvEdit(){document.getElementById('av-mo').classList.remove('open');}
+function swAvTab(t){avTab=t;document.querySelectorAll('.av-tab').forEach((b,i)=>b.classList.toggle('active',(t==='emoji'&&i===0)||(t==='photo'&&i===1)));document.getElementById('av-emoji-tab').style.display=t==='emoji'?'block':'none';document.getElementById('av-photo-tab').style.display=t==='photo'?'block':'none';}
+function selAvEmoji(el){document.querySelectorAll('#av-picker .av-opt').forEach(a=>a.classList.remove('selected'));el.classList.add('selected');pendEmoji=el.dataset.v;}
+async function handleAvPhoto(e){const f=e.target.files[0];if(!f)return;const b=await f2b64(f);const s=await resize(b);pendPhoto=s;const p=document.getElementById('av-prev');p.src=s;p.style.display='block';document.getElementById('av-hint').style.display='none';}
+function saveAvEdit(){
+  if(avTab==='photo'&&pendPhoto){cu.avatar=pendPhoto;cu.avType='photo';}
+  else if(avTab==='emoji'&&pendEmoji){cu.avatar=pendEmoji;cu.avType='emoji';}
+  saveUser();updateUI();closeAvEdit();toast('✅ ¡Foto actualizada!');
+}
+
+// ── EXPORT / IMPORT ──
+function copyCode(){
+  const code=document.getElementById('export-code').textContent;
+  navigator.clipboard.writeText(code).then(()=>toast('📋 ¡Código copiado!')).catch(()=>{
+    // fallback
+    const ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('📋 ¡Código copiado!');
+  });
+}
+function openImport(){document.getElementById('import-err').style.display='none';document.getElementById('import-code-inp').value='';document.getElementById('import-mo').classList.add('open');}
+function closeImport(){document.getElementById('import-mo').classList.remove('open');}
+function doImport(){
+  const raw=document.getElementById('import-code-inp').value.trim();
+  try{
+    const data=JSON.parse(decodeURIComponent(escape(atob(raw))));
+    if(!data.user||!data.user.email)throw new Error('bad');
+    const u=data.user;
+    if(!users.find(x=>x.email===u.email)){users.push(u);dbS('eco3_users',users);}
+    if(data.plants)dbS('eco3_plants_'+u.id,data.plants);
+    cu=u;dbS('eco3_session',cu);
+    closeImport();startApp();toast('✅ ¡Cuenta importada con éxito!');
+  }catch(e){document.getElementById('import-err').style.display='block';}
+}
+
+// ── LOGOUT / DELETE ──
+function doLogout(){if(confirm('¿Seguro que quieres salir? 🌱')){dbS('eco3_session',null);location.reload();}}
+function doDelete(){if(confirm('⚠️ ¿Eliminar tu cuenta? ¡Perderás todo!')){users=users.filter(u=>u.id!==cu.id);dbS('eco3_users',users);dbS('eco3_session',null);location.reload();}}
+
+// ── GEOLOCATION ──
+function reqLoc(){
+  if(!navigator.geolocation){toast('❌ Tu dispositivo no soporta GPS');return;}
+  const btn=document.getElementById('loc-btn');
+  btn.innerHTML='<span>⏳</span> Obteniendo ubicación...';
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      locLat=pos.coords.latitude.toFixed(5);
+      locLng=pos.coords.longitude.toFixed(5);
+      let locStr=`${locLat}, ${locLng}`;
+      // Try reverse geocode via Nominatim (free, no key needed)
+      try{
+        const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${locLat}&lon=${locLng}&format=json&accept-language=es`);
+        const d=await r.json();
+        locStr=d.display_name||locStr;
+        // Shorten to city + state + country
+        if(d.address){const a=d.address;locStr=[a.city||a.town||a.village||a.municipality,a.state,a.country].filter(Boolean).join(', ');}
+      }catch(e){}
+      document.getElementById('loc-txt').textContent=locStr;
+      document.getElementById('loc-res').style.display='block';
+      document.getElementById('pl-loc').value=locStr;
+      btn.innerHTML='<span>📍</span> Ubicación obtenida ✅';
+    },
+    err=>{
+      btn.innerHTML='<span>📍</span> Usar mi ubicación actual';
+      if(err.code===1)toast('❌ Permiso de ubicación denegado. Actívalo en tu navegador.');
+      else toast('❌ No se pudo obtener la ubicación');
+    },
+    {timeout:12000,enableHighAccuracy:true}
+  );
+}
+
+// ── GARDEN ──
+function renderPlants(){
+  const grid=document.getElementById('plant-grid');grid.innerHTML='';
+  const slots=12;
+  for(let i=0;i<slots;i++){
+    const d=document.createElement('div');
+    d.className='pslot'+(plants[i]?' planted':'');
+    if(plants[i])d.innerHTML=`<span class="pe">${plants[i].type}</span><span class="pn">${plants[i].name}</span>`;
+    else d.innerHTML='<span style="font-size:1.5rem">＋</span><span>Vacío</span>';
+    grid.appendChild(d);
+  }
+}
+function addPlant(){
+  const name=document.getElementById('pl-name').value.trim();
+  const type=document.getElementById('pl-type').value;
+  const loc=document.getElementById('pl-loc').value.trim();
+  if(!name||!type){toast('⚠️ Escribe nombre y elige tipo de planta');return;}
+  if(plants.length>=12){toast('🌻 ¡Ya tienes 12 plantas!');return;}
+  plants.push({name,type,location:loc,lat:locLat,lng:locLng,date:new Date().toLocaleDateString('es-MX')});
+  dbS('eco3_plants_'+cu.id,plants);
+  cu.points+=5;saveUser();updateUI();
+  document.getElementById('pl-name').value='';document.getElementById('pl-type').value='';document.getElementById('pl-loc').value='';
+  document.getElementById('loc-res').style.display='none';locLat=null;locLng=null;
+  document.getElementById('loc-btn').innerHTML='<span>📍</span> Usar mi ubicación actual';
+  renderPlants();toast('🌱 ¡Planta registrada! +5 puntos 🎉');
+}
+
+// ── SHOP ──
+function buy(name,cost){if(cu.points<cost){toast('😔 No tienes suficientes puntos');return;}if(confirm(`¿Comprar "${name}" por ${cost} puntos?`)){cu.points-=cost;saveUser();updateUI();toast(`🎉 ¡Compraste: ${name}!`);}}
+
+// ── GLOSSARY ──
+function renderGlossary(list){const c=document.getElementById('gl-list');c.innerHTML='';list.forEach(g=>{const d=document.createElement('div');d.className='glitem';d.innerHTML=`<span class="glic">${g.ic}</span><div><div class="glword">${g.w}</div><div class="gldef">${g.d}</div></div>`;c.appendChild(d);});}
+function filterG(){const q=document.getElementById('sinp').value.toLowerCase();renderGlossary(GLOSSARY.filter(g=>g.w.toLowerCase().includes(q)||g.d.toLowerCase().includes(q)));}
+
+// ── TOAST ──
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ── AUTO LOGIN ──
+if(cu){users=dbG('eco3_users')||[];startApp();}
+</script>
+</body>
+</html>
